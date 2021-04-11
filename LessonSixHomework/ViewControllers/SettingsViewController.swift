@@ -38,9 +38,17 @@ class SettingsViewController: UIViewController {
         mainView.layer.cornerRadius = 15
         mainView.backgroundColor = backgroundColor
         
+        redValueTF.delegate = self
+        blueValueTF.delegate = self
+        greenValueTF.delegate = self
+        
         getValueFromMainView()
         setValue(for: redValueLabel, greenValueLabel, blueValueLabel)
         setTextFieldValue(for: redValueTF, greenValueTF, blueValueTF)
+        
+        addDoneButtonTo(redValueTF)
+        addDoneButtonTo(greenValueTF)
+        addDoneButtonTo(blueValueTF)
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -139,11 +147,47 @@ extension UIColor {
     }
 }
 
+extension SettingsViewController {
+    private func showAlert(whith title: String, and message: String) {
+        let alertMessage = UIAlertController(title: title,
+                                            message: message,
+                                            preferredStyle: .alert
+        )
+        let okAction = UIAlertAction(title: "OK", style: .default)
+        alertMessage.addAction(okAction)
+        present(alertMessage, animated: true)
+    }
+    
+    private func addDoneButtonTo(_ textField: UITextField) {
+        
+        let numberToolbar = UIToolbar()
+        textField.inputAccessoryView = numberToolbar
+        numberToolbar.sizeToFit()
+        
+        let doneButton = UIBarButtonItem(title:"Done",
+                                         style: .done,
+                                         target: self,
+                                         action: #selector(didTapDone))
+        
+        let flexBarButton = UIBarButtonItem(barButtonSystemItem: .flexibleSpace,
+                                            target: nil,
+                                            action: nil)
+        
+        numberToolbar.items = [flexBarButton, doneButton]
+        
+    }
+    
+    @objc private func didTapDone() {
+        view.endEditing(true)
+    }
+}
+
 extension SettingsViewController: UITextFieldDelegate {
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         guard let text = textField.text  else { return }
         if let value = Float(text) {
+            if value <= 1 {
             switch textField {
             case redValueTF: redSlider.value = value
             case greenValueTF: greenSlider.value = value
@@ -151,9 +195,14 @@ extension SettingsViewController: UITextFieldDelegate {
             default: break
             }
             setColor()
-            setValue()
+            setValue(for: redValueLabel, greenValueLabel, blueValueLabel)
+            } else {
+                showAlert(whith: "Error!", and: "Value can range from 0 to 1")
+                textField.text = ""
+            }
         } else {
-            print("Error")
+            showAlert(whith: "Error!", and: "Please input value like 0.00")
+            textField.text = ""
         }
     }
     
