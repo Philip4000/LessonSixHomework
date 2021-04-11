@@ -43,6 +43,11 @@ class SettingsViewController: UIViewController {
         setTextFieldValue(for: redValueTF, greenValueTF, blueValueTF)
     }
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+        view.endEditing(true)
+    }
+    
     // MARK: - IBActions
     
     @IBAction func rgbSlider(_ sender: UISlider) {
@@ -61,7 +66,7 @@ class SettingsViewController: UIViewController {
         }
     }
    
-    @IBAction func doneButtomPressed() {
+    @IBAction func doneButtonPressed() {
         delegate.setNewColor(from: mainView.backgroundColor ?? .black)
         dismiss(animated: true)
     }
@@ -131,5 +136,29 @@ extension UIColor {
     var components: (red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) {
         let viewColor = self.viewColor
         return (viewColor.red, viewColor.green, viewColor.blue, viewColor.alpha)
+    }
+}
+
+extension SettingsViewController: UITextFieldDelegate {
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        guard let text = textField.text  else { return }
+        if let value = Float(text) {
+            switch textField {
+            case redValueTF: redSlider.value = value
+            case greenValueTF: greenSlider.value = value
+            case blueValueTF: blueSlider.value = value
+            default: break
+            }
+            setColor()
+            setValue()
+        } else {
+            print("Error")
+        }
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
     }
 }
